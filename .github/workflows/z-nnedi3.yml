@@ -36,7 +36,9 @@ jobs:
 
     - name: Build
       run: |
-        mkdir -p result/znedi3 result/nnedi3
+        mkdir -p result/znedi3
+        mkdir -p result/nnedi3
+
         git clone --recursive https://github.com/sekrit-twc/znedi3.git
         cd znedi3
         make X86=1
