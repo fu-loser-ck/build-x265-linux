@@ -39,6 +39,7 @@ jobs:
         git clone --recursive https://github.com/sekrit-twc/znedi3.git
         pushd znedi3
         make X86=1
+        7z a -t7z -mx=7 ../znedi3-build.7z .
         popd
 
         git clone https://github.com/sekrit-twc/zimg --depth 1 --shallow-submodules --recurse-submodules
@@ -68,12 +69,9 @@ jobs:
         ./autogen.sh
         ./configure
         make
+        7z a -t7z -mx=7 ../nnedi3-build.7z .
         popd
 
-    - name: Compress artifact
-      run: |
-        7z a -t7z -mx=7 znedi3-build.7z ./znedi3
-        7z a -t7z -mx=7 nnedi3-build.7z ./vapoursynth-nnedi3
         mkdir result
         cp znedi3-build.7z result/znedi3-build.7z
         cp nnedi3-build.7z result/nnedi3-build.7z
