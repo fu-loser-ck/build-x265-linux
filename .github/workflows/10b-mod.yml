@@ -35,10 +35,12 @@ jobs:
         git clone https://github.com/kskshaf/x265-mod.git
         rm -rf x265-mod/source/cmake/ModVersion.cmake
         cp ./modfiles/ModVersion.cmake ./x265-mod/source/cmake/ModVersion.cmake
+        rm -rf x265-mod/source/CMakeLists.txt
+        cp ./modfiles/CMakeLists.txt ./x265-mod/source/CMakeLists.txt
 
         mkdir x265-mod/build/10b
         cd x265-mod/build/10b
-        cmake -GNinja ../../source -DHIGH_BIT_DEPTH=ON -DENABLE_SHARED=OFF -DUSE_MIMALLOC=OFF -DUSE_LTO=ON -DTARGET_CPU=generic -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
+        cmake -GNinja ../../source -DHIGH_BIT_DEPTH=ON -DENABLE_SHARED=OFF -DUSE_MIMALLOC=OFF -DUSE_LTO=ON -DTARGET_CPU=znver2 -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
         ninja
     - name: Compress artifact
       run: |
