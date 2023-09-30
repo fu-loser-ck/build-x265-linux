@@ -9,6 +9,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CC: gcc-12
+      CXX: g++-12
     defaults:
       run:
         shell: bash
@@ -23,9 +26,6 @@ jobs:
       run: |
         sudo apt update
         sudo apt install git cmake build-essential nasm ninja-build gh gcc-12 gcc-12-multilib g++-12 g++-12-multilib
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12
-        sudo update-alternatives --config gcc
-
         export HOME=${{ github.workspace }}
         BUILD_LIBS=${HOME}/build_libs
         export PATH=${BUILD_LIBS}/bin:${PATH}
@@ -33,8 +33,6 @@ jobs:
         export LDFLAGS="-static -static-libgcc -static-libstdc++ -s -lm"
 
         git clone https://github.com/kskshaf/x265-mod.git
-
-        ls -a
         rm -rf x265-mod/source/cmake/ModVersion.cmake
         cp ./modfiles/ModVersion.cmake ./x265-mod/source/cmake/ModVersion.cmake
 
