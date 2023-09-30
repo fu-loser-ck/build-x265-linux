@@ -72,6 +72,7 @@ jobs:
         ./configure
         make
         sudo make install
+        cp /usr/local/lib/libnnedi3.so /home/runner/work/build-x265-linux/build-x265-linux/result/nnedi3/libnnedi3.so
         cp -r ./ /home/runner/work/build-x265-linux/build-x265-linux/result/nnedi3/
         cd ..
 
