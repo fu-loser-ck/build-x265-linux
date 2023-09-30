@@ -9,6 +9,9 @@ permissions:
 jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
+    env:
+      CC: gcc-12
+      CXX: g++-12
 
     defaults:
       run:
@@ -20,32 +23,52 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Build Environments
+    - uses: actions/setup-python@v4
+      with:
+        # Version range or exact version of a Python version to use, using SemVer's version range syntax.
+        python-version: '3.11'
+
+    - name: Setup Envs
       run: |
-        sudo apt update
         sudo apt install git build-essential nasm yasm ninja-build gh gcc-12 gcc-12-multilib g++-12 g++-12-multilib
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12
-        sudo update-alternatives --config gcc
+        python -m pip install -U pip
+        pip install -U cython setuptools wheel
 
-        export HOME=${{ github.workspace }}
-        BUILD_LIBS=${HOME}/build_libs
-        export PATH=${BUILD_LIBS}/bin:${PATH}
-        export PKG_CONFIG_PATH=${BUILD_LIBS}/lib/pkgconfig:${PKG_CONFIG_PATH}
-
+    - name: Build
+      run: |
         git clone --recursive https://github.com/sekrit-twc/znedi3.git
-        cd znedi3
+        pushd znedi3
         make X86=1
-        cd ..
+        popd
+
+        git clone https://github.com/sekrit-twc/zimg --depth 1 --shallow-submodules --recurse-submodules
+        pushd zimg
+        ./autogen.sh
+        ./configure --prefix=/usr
+        make -j2
+        sudo make install -j2
+        popd
+        rm -rf zimg
+
+        git clone https://github.com/vapoursynth/vapoursynth.git
+        git checkout R64
+        pushd vapoursynth
+        ./autogen.sh
+        ./configure --prefix=/usr
+        make -j2
+        sudo make install -j2
+        python setup.py sdist -d sdist
+        mkdir empty
+        pushd empty
+        pip install vapoursynth --no-index --find-links ../sdist
+        popd
 
         git clone --recursive https://github.com/dubhater/vapoursynth-nnedi3.git
-        cd vapoursynth-nnedi3
-        curl -s -o vs.zip -L https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R54.zip
-        unzip -q vs.zip
-        mkdir vapoursynth
-        mv vapoursynth-*/ vapoursynth/
+        pushd vapoursynth-nnedi3
         ./autogen.sh
         ./configure
         make
+        popd
 
     - name: Compress artifact
       run: |
