@@ -38,6 +38,9 @@ jobs:
         cd ..
 
         git clone --recursive https://github.com/dubhater/vapoursynth-nnedi3.git
+        curl -s -o vs.zip -L https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R54.zip
+        unzip -q vs.zip
+        mv vapoursynth-*/ vapoursynth/
         cd vapoursynth-nnedi3
         ./autogen.sh
         ./configure
