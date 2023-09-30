@@ -36,11 +36,12 @@ jobs:
 
     - name: Build
       run: |
+        mkdir result
         git clone --recursive https://github.com/sekrit-twc/znedi3.git
-        pushd znedi3
+        cd znedi3
         make X86=1
-        7z a -t7z -mx=7 ../znedi3-build.7z .
-        popd
+        7z a -t7z -mx=7 ../result/znedi3-build.7z .
+        cd ..
 
         git clone https://github.com/sekrit-twc/zimg --depth 1 --shallow-submodules --recurse-submodules
         pushd zimg
@@ -65,16 +66,12 @@ jobs:
         popd
 
         git clone --recursive https://github.com/dubhater/vapoursynth-nnedi3.git
-        pushd vapoursynth-nnedi3
+        cd vapoursynth-nnedi3
         ./autogen.sh
         ./configure
         make
-        7z a -t7z -mx=7 ../nnedi3-build.7z .
-        popd
-
-        mkdir result
-        cp znedi3-build.7z result/znedi3-build.7z
-        cp nnedi3-build.7z result/nnedi3-build.7z
+        7z a -t7z -mx=7 ../result/nnedi3-build.7z .
+        cd ..
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
