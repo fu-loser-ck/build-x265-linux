@@ -51,8 +51,8 @@ jobs:
         rm -rf zimg
 
         git clone https://github.com/vapoursynth/vapoursynth.git
-        git checkout R64
         pushd vapoursynth
+        git checkout R64
         ./autogen.sh
         ./configure --prefix=/usr
         make -j2
