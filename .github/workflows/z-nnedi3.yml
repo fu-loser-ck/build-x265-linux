@@ -1,0 +1,58 @@
+name: znedi3 & nnedi3
+
+on: workflow_dispatch
+
+permissions:
+  actions: write
+  security-events: write
+
+jobs:
+  build-ubuntu:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Build Environments
+      run: |
+        sudo apt update
+        sudo apt install git build-essential nasm yasm ninja-build gh gcc-12 gcc-12-multilib g++-12 g++-12-multilib
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12
+        sudo update-alternatives --config gcc
+
+        export HOME=${{ github.workspace }}
+        BUILD_LIBS=${HOME}/build_libs
+        export PATH=${BUILD_LIBS}/bin:${PATH}
+        export PKG_CONFIG_PATH=${BUILD_LIBS}/lib/pkgconfig:${PKG_CONFIG_PATH}
+
+        git clone --recursive https://github.com/sekrit-twc/znedi3.git
+        cd znedi3
+        make X86=1
+        cd ..
+
+        git clone --recursive https://github.com/dubhater/vapoursynth-nnedi3.git
+        cd vapoursynth-nnedi3
+        ./autogen.sh
+        ./configure
+        make
+
+    - name: Compress artifact
+      run: |
+        7z a -t7z -mx=7 znedi3-build.7z ./znedi3
+        7z a -t7z -mx=7 nnedi3-build.7z ./vapoursynth-nnedi3
+        mkdir result
+        cp znedi3-build.7z result/znedi3-build.7z
+        cp nnedi3-build.7z result/nnedi3-build.7z
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-result
+        path: result/*
