@@ -1,0 +1,53 @@
+name: Linux-10b
+
+on: workflow_dispatch
+
+permissions:
+  actions: write
+  security-events: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Compile x265
+      run: |
+        sudo apt update
+        sudo apt install git cmake build-essential nasm ninja-build gh gcc-12 gcc-12-multilib g++-12 g++-12-multilib
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100 --slave /usr/bin/g++ g++ /usr/bin/g++-12
+        sudo update-alternatives --config gcc
+
+        export HOME=${{ github.workspace }}
+        BUILD_LIBS=${HOME}/build_libs
+        export PATH=${BUILD_LIBS}/bin:${PATH}
+        export PKG_CONFIG_PATH=${BUILD_LIBS}/lib/pkgconfig:${PKG_CONFIG_PATH}
+        export LDFLAGS="-static -static-libgcc -static-libstdc++ -s -lm"
+
+        git clone https://github.com/kskshaf/x265-mod.git
+
+        ls -a
+        rm -rf x265-mod/source/cmake/ModVersion.cmake
+        cp ./modfiles/ModVersion.cmake ./x265-mod/source/cmake/ModVersion.cmake
+
+        mkdir x265-mod/build/10b
+        cd x265-mod/build/10b
+        cmake -GNinja ../../source -DHIGH_BIT_DEPTH=ON -DENABLE_SHARED=OFF -DUSE_MIMALLOC=OFF -DUSE_LTO=ON -DTARGET_CPU=generic -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy
+        ninja
+    - name: Compress artifact
+      run: |
+        cd x265-mod/build/10b
+        7z a -t7z -mx=7 ../../../x265-10b.7z ./*
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: x265-10b
+        path: ./x265-10b.7z
