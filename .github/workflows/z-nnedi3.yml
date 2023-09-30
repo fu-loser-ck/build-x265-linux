@@ -42,7 +42,7 @@ jobs:
         curl -s -o vs.zip -L https://github.com/vapoursynth/vapoursynth/archive/refs/tags/R54.zip
         unzip -q vs.zip
         mkdir vapoursynth
-        cp vapoursynth-*/ vapoursynth/
+        mv vapoursynth-*/ vapoursynth/
         ./autogen.sh
         ./configure
         make
